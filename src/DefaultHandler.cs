@@ -11,16 +11,12 @@ namespace MySqlUtils
 {
     public class DefaultHandler : HttpTaskAsyncHandler
     {
-        static Dictionary<string, Func<Tracer, HttpTaskAsyncHandler>> _handlers = new Dictionary<string, Func<Tracer, HttpTaskAsyncHandler>>(StringComparer.OrdinalIgnoreCase)
-        {
-            { "get /dump", tracer => new MySqlDump(tracer) },
-            { "post /execute", tracer => new MySqlExecute(tracer) }
-        };
+        static Dictionary<string, Func<Tracer, HttpTaskAsyncHandler>> _handlers;
 
         static DefaultHandler()
         {
             var handlers = new Dictionary<string, Func<Tracer, HttpTaskAsyncHandler>>(StringComparer.OrdinalIgnoreCase);
-            handlers[GetKey("get {0}/dump")] = tracer => new MySqlDump(tracer);
+            handlers[GetKey("post {0}/dump")] = tracer => new MySqlDump(tracer);
             handlers[GetKey("post {0}/execute")] = tracer => new MySqlExecute(tracer);
             _handlers = handlers;
         }

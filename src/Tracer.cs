@@ -9,16 +9,25 @@ namespace MySqlUtils
 {
     public class Tracer : IDisposable
     {
-        private const int MaxLogFiles = 100;
+        private const int MaxLogFiles = 20;
+        private const string LogFilePrefix = "MySqlUtils-";
 
         private static int _padding = 0;
 
         private readonly string _fileName;
+        private readonly bool _noTrace;
 
         public Tracer(HttpContext context)
         {
-            var padding = Interlocked.Increment(ref _padding) % 1000;
-            var file = String.Format("Trace_{0:yy-MM-dd-HH-mm-ss}-{1:D3}_{2}-{3}.log",
+            _noTrace = context.Request.HttpMethod == "GET";
+            if (_noTrace)
+            {
+                return;
+            }
+
+            var padding = Interlocked.Increment(ref _padding) % MaxLogFiles;
+            var file = String.Format("{0}{1:yyyy-MM-dd-HH-mm-ss}-{2:D3}_{3}-{4}.log",
+                LogFilePrefix,
                 DateTime.UtcNow,
                 padding,
                 context.Request.HttpMethod,
@@ -60,6 +69,11 @@ namespace MySqlUtils
 
         public void Trace(string format, params object[] args)
         {
+            if (_noTrace)
+            {
+                return;
+            }
+
             var message = String.Format("{0}, {1}", DateTime.UtcNow.ToString("o"), String.Format(format, args));
             Utils.SafeExecute(() => File.AppendAllLines(_fileName, new[] { message }));
         }
@@ -68,7 +82,8 @@ namespace MySqlUtils
         {
             Task.Run(() =>
             {
-                var files = Directory.GetFiles(Path.GetDirectoryName(_fileName), "Trace_*.log", SearchOption.TopDirectoryOnly);
+                var files = Directory.GetFiles(Path.GetDirectoryName(_fileName), 
+                    string.Format("{0}*.log", LogFilePrefix), SearchOption.TopDirectoryOnly);
                 var toDelete = files.Length - MaxLogFiles;
                 if (toDelete > 0)
                 {

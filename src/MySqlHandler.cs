@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -137,7 +138,7 @@ namespace MySqlUtils
                 }
                 else
                 {
-                    connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_cleardb_connectionstring");
+                    connectionString = GetMySqlConnectionStringEnv();
                 }
 
                 if (String.IsNullOrEmpty(connectionString))
@@ -204,6 +205,23 @@ namespace MySqlUtils
             public string BasePath
             {
                 get; private set;
+            }
+
+            private static string GetMySqlConnectionStringEnv()
+            {
+                foreach (DictionaryEntry env in Environment.GetEnvironmentVariables())
+                {
+                    if (((string)env.Key).StartsWith("MYSQLCONNSTR_", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var connectionString = (string)env.Value;
+                        if (!String.IsNullOrEmpty(connectionString))
+                        {
+                            return connectionString;
+                        }
+                    }
+                }
+
+                return null;
             }
         }
     }
