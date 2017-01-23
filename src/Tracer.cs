@@ -14,11 +14,13 @@ namespace MySqlUtils
 
         private static int _padding = 0;
 
+        private readonly HttpContext _context;
         private readonly string _fileName;
         private readonly bool _noTrace;
 
         public Tracer(HttpContext context)
         {
+            _context = context;
             _noTrace = context.Request.HttpMethod == "GET";
             if (_noTrace)
             {
@@ -44,7 +46,7 @@ namespace MySqlUtils
 
             Directory.CreateDirectory(Path.GetDirectoryName(_fileName));
 
-            Trace("Begin request, User-Agent: {0}", context.Request.ServerVariables["HTTP_USER_AGENT"]);
+            Trace("Begin request {0} {1}, User-Agent: {2}", context.Request.HttpMethod, context.Request.RawUrl, context.Request.ServerVariables["HTTP_USER_AGENT"]);
 
             if (padding % MaxLogFiles == 1)
             {

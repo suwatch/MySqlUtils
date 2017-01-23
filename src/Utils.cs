@@ -8,10 +8,38 @@ namespace MySqlUtils
     public static class Utils
     {
         static bool _isAzure = !String.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
+        static TimeSpan _mySqlTimeout = TimeSpan.FromSeconds(0);
 
         public static bool IsAzure
         {
             get { return _isAzure; }
+        }
+
+        public static TimeSpan MySqlTimeout
+        {
+            get
+            {
+                if (_mySqlTimeout <= TimeSpan.FromSeconds(0))
+                {
+                    var value = Environment.GetEnvironmentVariable("MYSQLUTILS_TIMEOUT_SECS");
+                    var secs = 0;
+                    if (!string.IsNullOrEmpty(value) && Int32.TryParse(value, out secs) && secs > 0)
+                    {
+                        _mySqlTimeout = TimeSpan.FromSeconds(secs);
+                    }
+                    else
+                    {
+                        _mySqlTimeout = TimeSpan.FromSeconds(600);
+                    }
+                }
+
+                return _mySqlTimeout;
+            }
+        }
+
+        public static string GetPath(string format)
+        {
+            return String.Format(format, Utils.IsAzure ? "/MySqlUtils" : String.Empty);
         }
 
         public static bool SafeExecute(Action action, Tracer tracer = null)

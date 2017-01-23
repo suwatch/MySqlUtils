@@ -11,10 +11,8 @@ namespace MySqlUtils
 {
     public class MySqlHandler : HttpTaskAsyncHandler
     {
-        public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(300);
-
         private Lazy<MySqlInfo> _sqlInfo = new Lazy<MySqlInfo>(MySqlInfo.Create);
-        private Tracer _tracer;
+        protected readonly Tracer _tracer;
 
         public MySqlHandler(Tracer tracer)
         {

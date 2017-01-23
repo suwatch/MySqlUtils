@@ -16,14 +16,10 @@ namespace MySqlUtils
         static DefaultHandler()
         {
             var handlers = new Dictionary<string, Func<Tracer, HttpTaskAsyncHandler>>(StringComparer.OrdinalIgnoreCase);
-            handlers[GetKey("post {0}/dump")] = tracer => new MySqlDump(tracer);
-            handlers[GetKey("post {0}/execute")] = tracer => new MySqlExecute(tracer);
+            handlers[Utils.GetPath("post {0}/dump")] = tracer => new MySqlDump(tracer);
+            handlers[Utils.GetPath("post {0}/dump/status")] = tracer => new MySqlDump(tracer);
+            handlers[Utils.GetPath("post {0}/execute")] = tracer => new MySqlExecute(tracer);
             _handlers = handlers;
-        }
-
-        static  string GetKey(string key)
-        {
-            return String.Format(key, Utils.IsAzure ? "/MySqlUtils" : String.Empty);
         }
 
         public override bool IsReusable

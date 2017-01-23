@@ -43,7 +43,7 @@ namespace MySqlUtils
             };
 
             var cts = new CancellationTokenSource();
-            var tasks = new[] { Task.Delay(DefaultTimeout, cts.Token), executeSql(cts.Token) };
+            var tasks = new[] { Task.Delay(Utils.MySqlTimeout, cts.Token), executeSql(cts.Token) };
             var task = await Task.WhenAny(tasks);
 
             // cancel all pending tasks
@@ -56,7 +56,7 @@ namespace MySqlUtils
 
                 Trace("{0}:{1} killed.", processName, processId);
 
-                throw new TimeoutException(String.Format("Timeout executing sql process {0}:{1} timeout", processName, processId));
+                throw new TimeoutException(String.Format("Execute sql process {0}:{1} has exceeded {2} timeout", processName, processId, Utils.MySqlTimeout));
             }
 
             // to ensure successful in executing query and process has exited

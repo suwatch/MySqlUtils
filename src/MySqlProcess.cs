@@ -28,6 +28,7 @@ namespace MySqlUtils
             _process = Process.Start(processInfo);
             ProcessName = _process.ProcessName;
             Id = _process.Id;
+            StartTime = DateTime.UtcNow;
 
             // hook process event
             _processEvent = new ManualResetEvent(true);
@@ -74,6 +75,11 @@ namespace MySqlUtils
             get; private set;
         }
 
+        public DateTime StartTime
+        {
+            get; private set;
+        }
+
         public Stream Input
         {
             get { return _process.StandardInput.BaseStream; }
@@ -89,6 +95,11 @@ namespace MySqlUtils
             get { return _process.ExitCode; }
         }
 
+        public bool HasExited
+        {
+            get { return _process.HasExited; }
+        }
+
         public void Kill()
         {
             _process.Kill();
@@ -101,7 +112,14 @@ namespace MySqlUtils
 
         public async Task WaitForExitAsync(TimeSpan timeout)
         {
-            await _processEvent.WaitHandleAsync(timeout);
+            try
+            {
+                await _processEvent.WaitHandleAsync(timeout);
+            }
+            catch (TimeoutException)
+            {
+                throw new TimeoutException(String.Format("Execute sql process {0}:{1} has exceeded {2} timeout", ProcessName, Id, timeout));
+            }
         }
 
         public static MySqlProcess Start(string exe, string arguments)
